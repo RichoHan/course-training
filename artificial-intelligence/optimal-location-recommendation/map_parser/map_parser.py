@@ -18,14 +18,19 @@ class MapParser:
             address=address,
             api_key=self.api_key
         )
-        response = requests.get(request_url).json()
-        if len(response['results']) > 1:
-            print('Not an accurate address.')
-            return
+        try:
+            response = requests.get(request_url).json()
+            if len(response['results']) == 0:
+                return None, None, 0
 
-        print(json.dumps(
-            response['results'][0]['geometry']['location'], indent=2
-        ))
+            location = response['results'][0]['geometry']['location']
+            return location['lat'], location['lng'], len(response['results'])
+
+        except Exception as e:
+            print(e)
+            if response:
+                print(json.dumps(response, indent=2))
+            return None, None, 0
 
 
 @click.command()
@@ -55,11 +60,17 @@ def start_parser(key, csv):
         4: 0
     })
 
-    # parser = MapParser(key)
-    # for address in df.iloc[0:3]['分公司地址']:
-    #     print(address)
-    #     parser.parse_to_coord(address)
-    #     time.sleep(0.01)
+    # Fill in correspinding coordinates
+    parser = MapParser(key)
+    with click.progressbar(length=len(df)) as bar:
+        for index, row in df.iterrows():
+            lat, lng, candidates = parser.parse_to_coord(row['分公司地址'])
+            df.loc[index, 'lat'] = lat
+            df.loc[index, 'lng'] = lng
+            df.loc[index, 'candidates'] = candidates
+            bar.update(1)
+
+    df.to_csv('processed-c-stores.csv')
 
 
 if __name__ == "__main__":
