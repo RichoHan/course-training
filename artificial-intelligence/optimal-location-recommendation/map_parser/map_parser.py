@@ -1,5 +1,4 @@
 import json
-import time
 from collections import Counter
 
 import click
@@ -33,12 +32,8 @@ class MapParser:
             return None, None, 0
 
 
-@click.command()
-@click.option('--key', prompt='Your Geocoding API key')
-@click.option('--csv', prompt='Your csv file')
-def start_parser(key, csv):
-    df = pd.read_csv(csv)
-
+def parse_address(parser, df):
+    """ Parse address to latitudes and longitudes. """
     # A good way to check class distribution
     # print(Counter(df['分公司狀態']))
     # print(Counter(df['公司名稱']))
@@ -61,7 +56,6 @@ def start_parser(key, csv):
     })
 
     # Fill in correspinding coordinates
-    parser = MapParser(key)
     with click.progressbar(length=len(df)) as bar:
         for index, row in df.iterrows():
             lat, lng, candidates = parser.parse_to_coord(row['分公司地址'])
@@ -71,6 +65,40 @@ def start_parser(key, csv):
             bar.update(1)
 
     df.to_csv('processed-c-stores.csv')
+
+
+def download_tiles(parser, df):
+    """ Download tiles based on latitudes and longitudes. """
+    try:
+        filtered_df = df.loc[df['candidates'] == 1]
+        click.secho(
+            'Number of tiles available: {}'.format(len(filtered_df)),
+            fg='green'
+        )
+        with click.progressbar(length=len(filtered_df)) as bar:
+            for index, row in df.iterrows():
+                print(row['lat'])
+                bar.update(1)
+                break
+
+    except Exception as e:
+        print(e)
+        click.secho('Wrong format for downloading tiles.', fg='red')
+
+
+@click.command()
+@click.option('--key', prompt='Your API key')
+@click.option('--csv', prompt='Your csv file')
+@click.option('--mode', prompt='Parse mode')
+def start_parser(key, csv, mode):
+    parser = MapParser(key)
+    df = pd.read_csv(csv)
+
+    if mode == 'geocoding':
+        parse_address(parser, df)
+
+    elif mode == 'tiles':
+        download_tiles(parser, df)
 
 
 if __name__ == "__main__":
