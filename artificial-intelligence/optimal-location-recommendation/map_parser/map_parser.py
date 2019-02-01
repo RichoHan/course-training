@@ -1,5 +1,5 @@
 import json
-from collections import Counter
+import os
 
 import click
 import pandas as pd
@@ -30,6 +30,15 @@ class MapParser:
             if response:
                 print(json.dumps(response, indent=2))
             return None, None, 0
+
+    def download_tile(self, filename, lat, lng):
+        img = open(filename, 'wb')
+        img.write(
+            requests.get(
+                'https://api.mapbox.com/styles/v1/richohan/cjrkh81fb1mjp2toa331e5br6/static/{},{},16/300x300?access_token={}'.format(lng, lat, self.api_key)
+            ).content
+        )
+        img.close()
 
 
 def parse_address(parser, df):
@@ -77,9 +86,20 @@ def download_tiles(parser, df):
         )
         with click.progressbar(length=len(filtered_df)) as bar:
             for index, row in df.iterrows():
-                print(row['lat'])
                 bar.update(1)
-                break
+                invoice, lat, lng = row.loc[['分公司統一編號', 'lat', 'lng']]
+
+                folder = 'maps'
+                if not os.path.isdir(folder):
+                    os.makedirs(folder)
+
+                filename = '{}.png'.format(invoice)
+                if filename in os.listdir(folder):
+                    continue
+
+                parser.download_tile(
+                    '{}/{}'.format(folder, filename), lat, lng
+                )
 
     except Exception as e:
         print(e)
