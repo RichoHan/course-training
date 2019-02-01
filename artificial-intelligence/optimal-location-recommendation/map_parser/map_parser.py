@@ -35,7 +35,7 @@ class MapParser:
         img = open(filename, 'wb')
         img.write(
             requests.get(
-                'https://api.mapbox.com/styles/v1/richohan/cjrkh81fb1mjp2toa331e5br6/static/{},{},16/300x300?access_token={}'.format(lng, lat, self.api_key)
+                'https://api.mapbox.com/styles/v1/richohan/cjrlg6mre0d8y2sp3la3um1q0/static/{},{},16/300x300?access_token={}'.format(lng, lat, self.api_key)
             ).content
         )
         img.close()
@@ -89,7 +89,7 @@ def download_tiles(parser, df):
                 bar.update(1)
                 invoice, lat, lng = row.loc[['分公司統一編號', 'lat', 'lng']]
 
-                folder = 'maps'
+                folder = 'maps-traffic'
                 if not os.path.isdir(folder):
                     os.makedirs(folder)
 

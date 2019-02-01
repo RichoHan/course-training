@@ -1,0 +1,17 @@
+version: '2.3'
+services:
+  nginx:
+    image: "tensorflow/tensorflow:latest-gpu-py3"
+    container_name: optimal-location-recommendation
+    runtime: nvidia
+    volumes:
+      - .:/notebooks
+    ports:
+      - "8888:8888"
+    command:
+      - /bin/sh
+      - -c
+      - |
+        pip install keras
+        jupyter notebook --allow-root
+    restart: on-failure
