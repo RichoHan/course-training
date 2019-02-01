@@ -2,6 +2,8 @@
 # Edit at https://www.gitignore.io/?templates=python
 
 artificial-intelligence/optimal-location-recommendation/map_parser/processed-c-stores.csv
+artificial-intelligence/optimal-location-recommendation/map_parser/maps/*
+artificial-intelligence/optimal-location-recommendation/map_parser/maps-traffic/*
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
